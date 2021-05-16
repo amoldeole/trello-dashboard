@@ -65,6 +65,12 @@ export class DashboardComponent implements AfterViewInit {
     localStorage.setItem('cardList', JSON.stringify(parsedData));
   }
 
+  registerAddEvent(compInstance: CardListComponent): void {
+    compInstance.changeEvent.subscribe((comp: CardListComponent) => {
+      this.parseListData();
+    });
+  }
+
   private registerRemoveEvent(compInstance: CardListComponent) {
     compInstance.remove.subscribe((comp: CardListComponent) => {
       const componentIndex = this.cardListComponent.indexOf(comp);
@@ -77,13 +83,7 @@ export class DashboardComponent implements AfterViewInit {
       }
     });
   }
-
-  registerAddEvent(compInstance: CardListComponent): void {
-    compInstance.changeEvent.subscribe((comp: CardListComponent) => {
-      this.parseListData();
-    });
-  }
-
+  
   private initCardListComp() {
     const cardListData = localStorage.getItem('cardList');
     if (!!cardListData) {

@@ -39,6 +39,17 @@ export class CardListComponent extends EventEmitter implements OnInit {
     this.changeEvent.emit(true);
   }
 
+  dragover_handler(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move"
+   }
+   
+   drop_handler(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("application/my-app");
+    ev.target.appendChild(document.getElementById(data));
+  }
+
   private registerRemoveEvent(compInstance: CardComponent) {
     compInstance.remove.subscribe((comp: CardComponent) => {
       const componentIndex = this.cardComponents.indexOf(comp);
