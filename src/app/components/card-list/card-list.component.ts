@@ -12,9 +12,8 @@ export class CardListComponent extends EventEmitter implements OnInit {
   cardComponents: CardComponent[];
   cardIndex: number;
   @Output() remove: EventEmitter<CardListComponent> = new EventEmitter<CardListComponent>();
-  @Output() addCard: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() changeEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   @ViewChild('cardcontainer', { read: ViewContainerRef }) cardContainerRef: ViewContainerRef;
-  @ViewChild('cardcontainer') cardcontainer: CardComponent;
   constructor(private resolver: ComponentFactoryResolver) {
     super();
     this.cardComponents = [];
@@ -28,15 +27,16 @@ export class CardListComponent extends EventEmitter implements OnInit {
     const cardListCompRef: ComponentRef<CardComponent> = this.cardContainerRef.createComponent(factory);
     const compInstance = cardListCompRef.instance;
     compInstance.title = card ? card.title : 'Card Title ' + this.cardIndex;
-    compInstance.description = card ? card.description : 'Some quick example text to build on the card title and make up the bulk of the cards content.'
+    compInstance.description = card ? card.description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
     this.registerRemoveEvent(compInstance);
     this.cardComponents.push(compInstance);
     this.cardIndex++;
-    this.addCard.emit(true);
+    this.changeEvent.emit(true);
   }
 
   removeCardList(): void {
     this.remove.emit(this);
+    this.changeEvent.emit(true);
   }
 
   private registerRemoveEvent(compInstance: CardComponent) {
@@ -45,6 +45,7 @@ export class CardListComponent extends EventEmitter implements OnInit {
       if (componentIndex !== -1) {
         this.cardContainerRef.remove(componentIndex);
         this.cardComponents.splice(componentIndex, 1);
+        this.changeEvent.emit(true);
         if (!this.cardComponents.length) {
           this.cardIndex = 1;
         }

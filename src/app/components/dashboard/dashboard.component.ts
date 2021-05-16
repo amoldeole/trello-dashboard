@@ -6,7 +6,10 @@ import {
   ComponentFactoryResolver,
   ComponentRef,
   ComponentFactory,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  OnChanges,
+  AfterViewInit,
+  AfterViewChecked
 } from '@angular/core';
 import { CardListComponent } from '../card-list/card-list.component';
 
@@ -15,18 +18,19 @@ import { CardListComponent } from '../card-list/card-list.component';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.sass']
 })
-export class DashboardComponent implements OnInit {
+
+export class DashboardComponent implements AfterViewInit {
   cardListComponent: CardListComponent[];
   listIndex: number;
 
   @ViewChild('listcontainer', { read: ViewContainerRef }) viewContainerRef: ViewContainerRef;
-  @ViewChild('listcontainer') listcontainer: CardListComponent;
-  constructor(private resolver: ComponentFactoryResolver) {
+  constructor(private resolver: ComponentFactoryResolver, private cdr: ChangeDetectorRef) {
     this.listIndex = 1;
     this.cardListComponent = [];
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
+    this.initCardListComp();
   }
 
   createCardListComponent(cardListComponent?: CardListComponent) {
@@ -38,7 +42,14 @@ export class DashboardComponent implements OnInit {
     this.registerRemoveEvent(compInstance);
     this.cardListComponent.push(compInstance);
     this.listIndex++;
-    this.parseListData();
+    if (!!cardListComponent) {
+      cardListComponent.cardComponents.forEach(card => {
+        setTimeout(() => compInstance.createCardComponent(card));
+      })
+    } else {
+      this.parseListData();
+    }
+    this.cdr.detectChanges();
   }
 
   parseListData(): void {
@@ -51,8 +62,6 @@ export class DashboardComponent implements OnInit {
         cardIndex: value.cardIndex
       };
     });
-    console.log(this.cardListComponent);
-
     localStorage.setItem('cardList', JSON.stringify(parsedData));
   }
 
@@ -70,8 +79,18 @@ export class DashboardComponent implements OnInit {
   }
 
   registerAddEvent(compInstance: CardListComponent): void {
-    compInstance.addCard.subscribe((comp: CardListComponent) => {
+    compInstance.changeEvent.subscribe((comp: CardListComponent) => {
       this.parseListData();
     });
+  }
+
+  private initCardListComp() {
+    const cardListData = localStorage.getItem('cardList');
+    if (!!cardListData) {
+      const cardComponents: CardListComponent[] = JSON.parse(cardListData)
+      cardComponents.forEach(list => {
+        this.createCardListComponent(list);
+      });
+    }
   }
 }
